@@ -18,7 +18,7 @@ coreData<-data.table(coreData)
 
 tempData<-tbl(conDplyr,"data_hourly_temperature") %>%
   # filter(river=="wb obear") %>%
-  collect() %>%
+  collect(n = Inf) %>%
   data.table() %>%
   .[datetime>=min(coreData$detectionDate)&
       datetime<=max(coreData$detectionDate)] %>%
@@ -49,7 +49,7 @@ time<-tempData[river=="west brook",date]
 coreData[,time:=which(as.Date(detectionDate)==time),by=detectionDate]
 
 flowData<-tbl(conDplyr,"data_daily_discharge") %>%
-  collect() %>%
+  collect(n = Inf) %>%
   data.table() %>%
   .[date>=as.Date(min(coreData$detectionDate))&
       date<=as.Date(max(coreData$detectionDate))] %>%
@@ -84,13 +84,13 @@ flowData<-tbl(conDplyr,"data_daily_discharge") %>%
 #   acast(date~river)
 
 
-tempData<-tbl(conDplyr,"data_daily_temperature") %>%
-  # filter(river=="wb obear") %>%
-  collect() %>%
-  data.table() %>%
-  .[date>=min(coreData$detectionDate)&
-    date<=max(coreData$detectionDate)] %>%
-  .[,.(date=as.Date(date),river,temperature=daily_max_temp)]
+# tempData<-tbl(conDplyr,"data_daily_temperature") %>%
+#   # filter(river=="wb obear") %>%
+#   collect(n = Inf) %>%
+#   data.table() %>%
+#   .[date>=min(coreData$detectionDate)&
+#     date<=max(coreData$detectionDate)] %>%
+#   .[,.(date=as.Date(date),river,temperature=daily_max_temp)]
 
 tempData<-tempData  %>%
   .[,.(date,river,temperature)] %>%
