@@ -1,0 +1,7 @@
+"Parameter","Absolute Bias","Relative Bias","RMSE","Proportion in 95% CI"
+"pBeta",-0.0033,-0.003,0.039,0.99
+"phiBeta1",0.1222,0.017,0.349,0.91
+"phiBeta2",2e-04,0,0.242,0.94
+"phiBeta3",0.0395,0.049,0.323,0.93
+"phiBeta4",-0.0031,-0.004,0.206,0.94
+"sdPhi",0.054,0.054,0.198,0.96

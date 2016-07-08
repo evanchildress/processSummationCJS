@@ -41,7 +41,6 @@ model{
   for(r in 1:nRivers){
     for(g in 1:2){
         # phiSigma[r,g]~dunif(0,10)
-      
         for(b in 1:4){
           phiBeta[b,r,g]~dnorm(0,0.667)
       }
@@ -75,13 +74,13 @@ model{
     }
   }
   
-  # for(g in 1:2){
-  #   for(r in 1:nRivers){
-  #     for(sam in 1:nSamples){
-  #       phiEps[sam,r,g]~dnorm(0,phiSigma[r,g])
-  #     }
-  #   }
-  # }
+#   for(g in 1:2){
+#     for(r in 1:nRivers){
+#       for(sam in 1:nSamples){
+#         phiEps[sam,r,g]~dnorm(0,phiSigma[r,g])
+#       }
+#     }
+#   }
   
   for(i in 1:nEvalRows){
     # State of survival
@@ -105,7 +104,7 @@ model{
     # Observation of live encounters
     encDATA[ evalRows[i] ] ~ dbern( obsProb[ evalRows[i] ] )
     
-    obsProb[ evalRows[i] ]<- p[ evalRows[i]] * z[ evalRows[i] ]
+    obsProb[ evalRows[i] ]<- p[ evalRows[i]] * proportionSampled[evalRows[i]] * z[ evalRows[i] ]
     #* availableDATA[ evalRows[i]+1 ]                 # Must be on the study site to be capturable.
   }
 }
