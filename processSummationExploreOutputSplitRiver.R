@@ -1,4 +1,4 @@
-out<-readRDS("processSummationSplitRiverOut.rds")
+out<-readRDS("processSummationOut.rds")
 
 phi<-out$mean$phiBeta
 

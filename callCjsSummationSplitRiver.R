@@ -132,7 +132,7 @@ jagsData$z[jagsData$z==2]<-0
 #                       ungroup() %>%
 #                       data.table() %>%
 #                       .[,length]
-jagsData$tempDATA<-tempData
+jagsData$tempDATA<-apply(tempData,2,scale2)
 jagsData$flowDATA<-apply(flowData,2,scale2)
 jagsData$time<-coreData$time
 jagsData$nTimes<-length(time)
