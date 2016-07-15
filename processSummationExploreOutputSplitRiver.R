@@ -1,11 +1,14 @@
-#out<-readRDS("processSummationOut.rds")
+out<-readRDS("processSummationSplitRiverOut.rds")
 
 phi<-out$mean$phiBeta
 
 flowData<-apply(flowData,2,scale2)
+#tempData<-apply(tempData,2,scale2)
 
 flowRange<-apply(flowData,2,range)
 tempRange<-apply(tempData,2,range)
+
+meanTemp<-apply(tempData,2,mean)
 
 flowSim<-tempSim<-array(NA,dim=c(100,6))
 for(r in 1:6){
@@ -17,8 +20,8 @@ survSim<-array(NA,dim=c(100,100,6,2))
 for(g in 1:2){
   for(r in 1:6){
     for(f in 1:100){
-      survSim[f,,r,g]<-surv<-phi[1,r,g]+phi[2,r,g]*flowSim[f,r]+phi[3,r,g]*flowSim[f,r]^2+
-        phi[4,r,g]*tempSim[,r]#+phi[5,r,g]*tempSim[,r]*flowSim[f,r]
+      survSim[f,,r,g]<-surv<-phi[1,r,g]+phi[2,r,g]*flowSim[f,r]+phi[3,r,g]*tempSim[f,r]+
+        phi[4,r,g]*tempSim[,r]*flowSim[f,r]#+phi[5,r,g]*tempSim[,r]*flowSim[f,r]
     }
   }
 }
@@ -43,11 +46,11 @@ for(g in 1:2){
 survFlow<-survTemp<-surv<-array(NA,dim=c(dim(flowData),2))
 for(g in 1:2){
   for(r in 1:6){
-    survFlow[,r,g]<-phi[1,r,g]+phi[2,r,g]*flowData[,r]+phi[3,r,g]*flowData[,r]^2+
-      phi[4,r,g]*mean(tempData[,r])#+phi[5,r,g]*mean(tempData[,r])^2
-    survTemp[,r,g]<-phi[1,r,g]+phi[4,r,g]*tempData[,r]#+phi[5,r,g]*tempData[,r]^2+
-      phi[2,r,g]*mean(flowData[,r])+phi[3,r,g]*mean(flowData[,r])^2
-    surv[,r,g]<-phi[1,r,g]+phi[2,r,g]*flowData[,r]+phi[3,r,g]*flowData[,r]^2+phi[4,r,g]*tempData[,r]
+    survFlow[,r,g]<-phi[1,r,g]+phi[2,r,g]*flowData[,r]+phi[3,r,g]*meanTemp[r]#+
+      #phi[4,r,g]*mean(tempData[,r])#+phi[5,r,g]*mean(tempData[,r])^2
+    survTemp[,r,g]<-phi[1,r,g]+phi[3,r,g]*tempData[,r]#+phi[5,r,g]*tempData[,r]^2+
+      #phi[2,r,g]*mean(flowData[,r])+phi[3,r,g]*mean(flowData[,r])^2
+    surv[,r,g]<-phi[1,r,g]+phi[2,r,g]*flowData[,r]+phi[3,r,g]*tempData[,r]+phi[4,r,g]*tempData[,r]*flowData[,r]
       #phi[5,r,g]*tempData[,r]^2
       #phi[5,r,g]*flowData[,r]*tempData[,r]
   }
@@ -60,12 +63,12 @@ survFlow[,date:=as.Date(rownames(flowData))]
 survTemp[,date:=as.Date(rownames(flowData))]
 surv[,date:=as.Date(rownames(flowData))]
 
-setnames(survFlow,c("index","westBrookYoy","jimmyYoy","mitchellYoy","obearYoy",
-                    "westBrookAdult","jimmyAdult","mitchellAdult","obearAdult","date"))
-setnames(survTemp,c("index","westBrookYoy","jimmyYoy","mitchellYoy","obearYoy",
-                    "westBrookAdult","jimmyAdult","mitchellAdult","obearAdult","date"))
-setnames(surv,c("index","westBrookYoy","jimmyYoy","mitchellYoy","obearYoy",
-                    "westBrookAdult","jimmyAdult","mitchellAdult","obearAdult","date"))
+setnames(survFlow,c("index","westBrook1Yoy","westBrook2Yoy","westBrook3Yoy","jimmyYoy","mitchellYoy","obearYoy",
+                    "westBrook1Adult","westBrook2Adult","westBrook3Adult","jimmyAdult","mitchellAdult","obearAdult","date"))
+setnames(survTemp,c("index","westBrook1Yoy","westBrook2Yoy","westBrook3Yoy","jimmyYoy","mitchellYoy","obearYoy",
+                    "westBrook1Adult","westBrook2Adult","westBrook3Adult","jimmyAdult","mitchellAdult","obearAdult","date"))
+setnames(surv,c("index","westBrook1Yoy","westBrook2Yoy","westBrook3Yoy","jimmyYoy","mitchellYoy","obearYoy",
+                    "westBrook1Adult","westBrook2Adult","westBrook3Adult","jimmyAdult","mitchellAdult","obearAdult","date"))
 
 # plot(westBrookYoy~date,data=surv,type='l')
 # points(westBrookYoy~date,data=survFlow,type='l',col='blue')
@@ -101,26 +104,36 @@ setnames(surv,c("index","westBrookYoy","jimmyYoy","mitchellYoy","obearYoy",
 # plot(mitchellYoy~date,data=surv,type='l',col='blue',ylim=c(0.85,1))
 # points(mitchellAdult~date,data=surv,type='l')
 
-plot(NA,xlim=c(-10,3),ylim=c(0,1))
-  points(survFlow$westBrookYoy~flowData[,1],pch=19,col=palette()[1])
-  points(survFlow$jimmyYoy~flowData[,2],pch=19,col=palette()[2])
-  points(survFlow$mitchellYoy~flowData[,3],pch=19,col=palette()[3])
-  points(survFlow$obearYoy~flowData[,4],pch=19,col=palette()[4])
+plot(NA,xlim=range(flowData),ylim=c(0.95,1))
+  points(survFlow$westBrook1Yoy~flowData[,1],pch=19,col=palette()[1])
+  points(survFlow$westBrook2Yoy~flowData[,1],pch=19,col=palette()[1])
+  points(survFlow$westBrook3Yoy~flowData[,1],pch=19,col=palette()[1])
+  points(survFlow$jimmyYoy~flowData[,4],pch=19,col=palette()[2])
+  points(survFlow$mitchellYoy~flowData[,5],pch=19,col=palette()[3])
+  #points(survFlow$obearYoy~flowData[,6],pch=19,col=palette()[4])
 
-plot(NA,xlim=c(-10,3),ylim=c(0,1))
-  points(survFlow$westBrookAdult~flowData[,1],pch=19,col=palette()[1])
-  points(survFlow$jimmyAdult~flowData[,2],pch=19,col=palette()[2])
-  points(survFlow$mitchellAdult~flowData[,3],pch=19,col=palette()[3])
-  points(survFlow$obearAdult~flowData[,4],pch=19,col=palette()[4])
+plot(NA,xlim=range(flowData),ylim=c(0.9,1))
+  points(survFlow$westBrook1Adult~flowData[,1],pch=19,col=palette()[1])
+  points(survFlow$westBrook2Adult~flowData[,1],pch=19,col=palette()[1])
+  points(survFlow$westBrook3Adult~flowData[,1],pch=19,col=palette()[1])
+  points(survFlow$jimmyAdult~flowData[,4],pch=19,col=palette()[2])
+  points(survFlow$mitchellAdult~flowData[,5],pch=19,col=palette()[3])
+  #points(survFlow$obearAdult~flowData[,6],pch=19,col=palette()[4])
   
-plot(NA,xlim=c(0,25),ylim=c(0,1))
-  points(survTemp$westBrookYoy~tempData[,1],pch=19,col=palette()[1])
-  points(survTemp$jimmyYoy~tempData[,2],pch=19,col=palette()[2])
-  points(survTemp$mitchellYoy~tempData[,3],pch=19,col=palette()[3])
-  points(survTemp$obearYoy~tempData[,4],pch=19,col=palette()[4])
+plot(NA,xlim=range(tempData),ylim=c(0.95,1))
+  points(survTemp$westBrook1Yoy~tempData[,1],pch=19,col=palette()[1])
+  points(survTemp$westBrook2Yoy~tempData[,1],pch=19,col=palette()[1])
+  points(survTemp$westBrook3Yoy~tempData[,1],pch=19,col=palette()[1])
+  points(survTemp$jimmyYoy~tempData[,4],pch=19,col=palette()[2])
+  points(survTemp$mitchellYoy~tempData[,5],pch=19,col=palette()[3])
+  points(survTemp$obearYoy~tempData[,6],pch=19,col=palette()[4])
   
-plot(NA,xlim=c(0,25),ylim=c(0,1))
-  points(survTemp$westBrookAdult~tempData[,1],pch=19,col=palette()[1])
-  points(survTemp$jimmyAdult~tempData[,2],pch=19,col=palette()[2])
-  points(survTemp$mitchellAdult~tempData[,3],pch=19,col=palette()[3])
-  points(survTemp$obearAdult~tempData[,4],pch=19,col=palette()[4])
+plot(NA,xlim=range(tempData),ylim=c(0.95,1))
+  points(survTemp$westBrook1Adult~tempData[,1],pch=19,col=palette()[1])
+  points(survTemp$westBrook2Adult~tempData[,1],pch=19,col=palette()[1])
+  points(survTemp$westBrook3Adult~tempData[,1],pch=19,col=palette()[1])
+  points(survTemp$jimmyAdult~tempData[,4],pch=19,col=palette()[2])
+  points(survTemp$mitchellAdult~tempData[,5],pch=19,col=palette()[3])
+  points(survTemp$obearAdult~tempData[,6],pch=19,col=palette()[4])
+  
+

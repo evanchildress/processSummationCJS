@@ -18,7 +18,7 @@ coreData<-data.table(coreData)
 
 tempData<-tbl(conDplyr,"data_hourly_temperature") %>%
   # filter(river=="wb obear") %>%
-  collect() %>%
+  collect(n=Inf) %>%
   data.table() %>%
   .[datetime>=min(coreData$detectionDate)&
       datetime<=max(coreData$detectionDate)] %>%
@@ -48,7 +48,7 @@ time<-tempData[river=="west brook",date]
 coreData[,time:=which(as.Date(detectionDate)==time),by=detectionDate]
 
 flowData<-tbl(conDplyr,"data_daily_discharge") %>%
-  collect() %>%
+  collect(n=Inf) %>%
   data.table() %>%
   .[date>=as.Date(min(coreData$detectionDate))&
       date<=as.Date(max(coreData$detectionDate))] %>%
@@ -64,7 +64,7 @@ flowData<-tbl(conDplyr,"data_daily_discharge") %>%
   acast(date~river)
 
 # flowData<-tbl(conDplyr,"data_flow_extension") %>%
-#   collect() %>%
+#   collect(n=Inf) %>%
 #   data.table() %>%
 #   .[date>=min(coreData$detectionDate)&
 #       date<=max(coreData$detectionDate)] %>%
@@ -85,7 +85,7 @@ flowData<-tbl(conDplyr,"data_daily_discharge") %>%
 
 tempData<-tbl(conDplyr,"data_daily_temperature") %>%
   # filter(river=="wb obear") %>%
-  collect() %>%
+  collect(n=Inf) %>%
   data.table() %>%
   .[date>=min(coreData$detectionDate)&
     date<=max(coreData$detectionDate)] %>%
@@ -158,19 +158,19 @@ inits<- function(){
 
 # MCMC settings
 na <- 500
-nb <- 20000
-ni <- 23000
+nb <- 30000
+ni <- 45000
 nt <- 3
 nc <- 3
 
-varsToMonitor<-c('pBeta','phiBeta')
+varsToMonitor<-c('pBeta','phiBeta','phiSigma','phiEps')
 
 gc()
 
   out <- jags(
     data=jagsData,
     inits=inits,
-    model = "CjsProcessSummation.R",
+    model = "CjsProcessSummationError.R",
     parameters.to.save = varsToMonitor,
     n.adapt=na,
     n.chains=nc,

@@ -168,14 +168,14 @@ ni <- 23000
 nt <- 3
 nc <- 3
 
-varsToMonitor<-c('pBeta','phiBeta')
+varsToMonitor<-c('pBeta','phiBeta','phiEps','sigmaPhi')
 
 gc()
 
   out <- jags(
     data=jagsData,
     inits=inits,
-    model = "CjsProcessSummation.R",
+    model = "CjsProcessSummationError.R",
     parameters.to.save = varsToMonitor,
     n.adapt=na,
     n.chains=nc,

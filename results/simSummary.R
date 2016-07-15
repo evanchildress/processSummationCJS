@@ -10,14 +10,14 @@ res<-readRDS("results/cjsSimResults.rds") %>%
   .[,sdPhi:=trueValue[which(parameter=="sdPhi")],by=simNum] %>%
   # .[parameter=="sdPhi",trueValue:=sdPhi] %>%
   .[,diffFrom0:=(q2.5<0&q97.5<0)|(q2.5>0&q97.5>0)] %>%
-  .[,withinCI:=q2.5<trueValue&q97.5>trueValue] %>%
+  .[,withinCI:=q2.5<=trueValue&q97.5>=trueValue] %>%
   .[,ciWidth:=q97.5-q2.5]
 
 
 bias<-res[,.(bias=round(sum(mean-trueValue)/.N,4),
              relativeBias=round(mean(mean-trueValue)/mean(abs(trueValue)),3),
              rmse=round(sqrt(sum((mean-trueValue)^2)/.N),3),
-             propWithinCI=round(sum(withinCI)/.N,2)),
+             propWithinCI=round(sum(withinCI)/.N,3)),
           by=.(parameter)] %>%
   setnames(c("Parameter","Absolute Bias","Relative Bias","RMSE","Proportion in 95% CI"))
 
