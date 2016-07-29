@@ -53,7 +53,7 @@ model{
         phiSigma[r,g]~dunif(0,10)
         phiTau[r,g]<-1/pow(phiSigma[r,g],2)
       
-        for(b in 1:4){
+        for(b in 1:5){
           phiBeta[b,r,g]~dnorm(0,0.667)
       }
     }
