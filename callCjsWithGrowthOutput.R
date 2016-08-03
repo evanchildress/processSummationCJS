@@ -2,7 +2,7 @@ library(getWBData)
 library(reshape2)
 library(data.table)
 library(jagsUI)
-
+reconnect()
 # coreData<-createCoreData(sampleType="electrofishing") %>% 
 #   addTagProperties() %>%
 #   dplyr::filter(species=="bkt") %>%
@@ -136,7 +136,7 @@ jagsData$lengthDATA<-coreData %>%
                       ungroup() %>%
                       data.table() %>%
                       .[,length]
-jagsData$tempDATA<-tempData
+jagsData$tempDATA<-apply(tempData,2,scale2)
 jagsData$flowDATA<-apply(flowData,2,scale2)
 jagsData$time<-coreData$time
 jagsData$nTimes<-length(time)
@@ -177,8 +177,8 @@ inits<- function(){
 
 # MCMC settings
 na <- 500
-nb <- 30000
-ni <- 40000
+nb <- 25000
+ni <- 33000
 nt <- 3
 nc <- 3
 
