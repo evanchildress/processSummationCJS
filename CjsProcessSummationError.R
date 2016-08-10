@@ -1,49 +1,35 @@
 model{
   ############## Recapture model
-  for(i in 1:nEvalRows){
-    logit( p[ evalRows[i] ] ) <- pBeta[1,
-                                       season[evalRows[i]],
-                                       riverDATA[evalRows[i]],
-                                       year[evalRows[i]],
-                                       stageDATA[evalRows[i]]]+
-                                pBeta[2,
-                                      season[evalRows[i]],
-                                      riverDATA[evalRows[i]],
-                                      year[evalRows[i]],
-                                      stageDATA[evalRows[i]]]*
-                                lengthDATA[evalRows[i]] #+
-                                # pEps[sample[evalRows[i]],
-                                #      riverDATA[evalRows[i]],
-                                #      stageDATA[evalRows[i]]]
-    
-  }
-
-  # for(g in 1:2){
-  #   for(r in 1:nRivers){
-  #     for(sam in 1:nSamples){
-  #       pEps[sam,r,g]~dnorm(0,pSigma[r,g])
-  #     }
-  #   }
+  # for(i in 1:nEvalRows){
+  #   logit( p[ evalRows[i] ] ) <- pBeta[1,
+  #                                      season[evalRows[i]],
+  #                                      riverDATA[evalRows[i]],
+  #                                      year[evalRows[i]],
+  #                                      stageDATA[evalRows[i]]]+
+  #                               pBeta[2,
+  #                                     season[evalRows[i]],
+  #                                     riverDATA[evalRows[i]],
+  #                                     year[evalRows[i]],
+  #                                     stageDATA[evalRows[i]]]*
+  #                               lengthDATA[evalRows[i]] #+
+  #                               # pEps[sample[evalRows[i]],
+  #                               #      riverDATA[evalRows[i]],
+  #                               #      stageDATA[evalRows[i]]]
+  #   
   # }
+  for(i in 1:nEvalRows){
+    logit( p[ evalRows[i] ] ) <- pBeta[1,riverDATA[evalRows[i]]]+
+      pBeta[2,riverDATA[evalRows[i]]]*flowForP[evalRows[i]] +
+      pBeta[3,riverDATA[evalRows[i]]]*lengthDATA[evalRows[i]]
+  }
   
   ############## Recapture priors
-  for(g in 1:2){
-    for( s in 1:4 ){
       for( r in 1:(nRivers) ){
-        for(y in 1:nYears){
-         # pSigma[r,g]~dunif(0,10)
-
-          pBeta[ 1,s,r,y,g ] ~ dnorm( 0,1.22 )
-          pBeta[ 2,s,r,y,g]~dnorm(muPBeta2[g],tauPBeta2[g])
+          pBeta[1,r]~dnorm(0,0.66)
+          pBeta[2,r]~dnorm(0,0.66)
+          pBeta[3,r]~dnorm(0,0.66)
         }
-      }
-    }
 
-  
-    muPBeta2[g]~dnorm(0,1.22)
-    sigmaPBeta2[g]~dgamma(2,0.1)
-    tauPBeta2[g]<-1/pow(sigmaPBeta2[g],2)
-  }
   
 
 ##survival priors

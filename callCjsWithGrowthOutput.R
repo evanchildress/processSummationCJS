@@ -15,7 +15,7 @@ reconnect()
 coreData<-readRDS("~/perform/vignettes/westBrook/results/corebkt.rds") %>%
   .[,trueObservedLength:=observedLength] %>%
   .[is.na(observedLength),observedLength:=predictedLength]
-
+  
   
 #5 of 13504 fish don't have length on first obs, so grab the mean for that age/sample/river 
 getFirstLength<-function(riv,age,sampName){
@@ -29,7 +29,6 @@ coreData[is.na(observedLength),observedLength:=getFirstLength(river,ageInSamples
 coreData<-coreData %>%  
   data.frame() %>%
   addEnvironmental(sampleFlow=T)
-
 
 jagsData <- createJagsData(coreData)
 
@@ -177,9 +176,9 @@ inits<- function(){
 
 # MCMC settings
 na <- 500
-nb <- 25000
-ni <- 33000
-nt <- 3
+nb <- 5000
+ni <- 8000
+nt <- 1
 nc <- 3
 
 varsToMonitor<-c('pBeta','phiBeta','phiSigma','phiEps','z')
