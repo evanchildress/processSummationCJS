@@ -69,9 +69,12 @@ scale2<-function(x){
   return(scale(x)[,1])
 }
 
-out<-readRDS("results/processSummationOut.rds")
+phiBeta<-readRDS("results/phiChains.rds")
 
-phi<-out$mean$phiBeta
+phi<-apply(phiBeta,c(2,3,4),mean)
+# out<-readRDS("results/processSummationOut.rds")
+# 
+# phi<-out$mean$phiBeta
 
 stds<-list(length=coreData %>% 
              group_by(river) %>%
@@ -98,10 +101,10 @@ for(g in 1:2){
            mfrow=c(2,2),mar=c(1.5,1.5,1,1))
   for(r in 1:4){
     plot(NA,xlim=range(flowRange),ylim=c(0.8,1))
-    for(i in 1:100){
-      iter<-sample(1:out$mcmc.info$n.samples,1)
-      surv<-out$sims.list$phiBeta[iter,1,r,g]+
-            out$sims.list$phiBeta[iter,2,r,g]*seq(flowRange[1,r],flowRange[2,r],length.out=100)
+    for(i in 1:500){
+      iter<-sample(1:dim(phiBeta)[1],1)
+      surv<-phiBeta[iter,1,r,g]+
+            phiBeta[iter,2,r,g]*seq(flowRange[1,r],flowRange[2,r],length.out=100)
       surv<-1/(1+exp(-surv))
       points(surv~seq(flowRange[1,r],flowRange[2,r],length.out=100),type='l',col=palette()[r])
     }
@@ -113,11 +116,11 @@ for(g in 1:2){
   tiff.par(paste0("results/figures/tempEffectWithError",c("Yoy","Adult")[g],".tif"),
            mfrow=c(2,2),mar=c(1.5,1.5,1,1))
   for(r in 1:4){
-    plot(NA,xlim=range(0,25),ylim=c(0.985,1))
-    for(i in 1:100){
-      iter<-sample(1:out$mcmc.info$n.samples,1)
-      surv<-out$sims.list$phiBeta[iter,1,r,g]+
-        out$sims.list$phiBeta[iter,3,r,g]*seq(tempRange[1,r],tempRange[2,r],length.out=100)
+    plot(NA,xlim=range(0,25),ylim=c(0.8,1))
+    for(i in 1:500){
+      iter<-sample(1:dim(phiBeta)[1],1)
+      surv<-phiBeta[iter,1,r,g]+
+        phiBeta[iter,3,r,g]*seq(tempRange[1,r],tempRange[2,r],length.out=100)
       surv<-1/(1+exp(-surv))
       points(surv~seq(flowRange[1,r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r],
                       flowRange[2,r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r],length.out=100),
@@ -126,3 +129,41 @@ for(g in 1:2){
   }
   dev.off()
 }
+
+surv<-array(dim=c(dim(tempData),2))
+for(r in 1:4){
+  for(g in 1:2){
+    surv[,r,g]<-phi[1,r,g]+phi[2,r,g]*flowData[2:nrow(flowData),r]+
+      phi[3,r,g]*tempData[,r]+phi[4,r,g]*tempData[,r]*flowData[2:nrow(flowData),r]
+  }
+}
+surv<-plogis(surv)
+yoySurv<-data.table(surv[,,1]) %>%
+  .[,date:=as.Date(rownames(tempData))]
+adultSurv<-data.table(surv[,,2]) %>%
+  .[,date:=as.Date(rownames(tempData))]
+
+
+for(y in unique(year(adultSurv$date))){
+n<-nrow(adultSurv[year(date)==y])
+highs<-lows<-vector(mode="double",length=length(2:(n-1)))
+
+for(i in 2:(n-1)){
+  highs[i-1]<-adultSurv[year(date)==y][order(V3)][1:i,prod(V3)]
+  lows[i-1]<-adultSurv[year(date)==y][order(V3)][(i+1):n,prod(V3)]
+}
+
+print(which.min(abs(highs-lows))/n)
+}
+
+plot(V1~date,data=yoySurv,type='l',col="black",ylim=c(0.90,1))
+points(V2~date,data=yoySurv,type='l',col=palette()[2])
+points(V3~date,data=yoySurv,type='l',col=palette()[3])
+points(V4~date,data=yoySurv,type='l',col=palette()[4])
+
+
+plot(V3~date,data=adultSurv[year(date)==2002],type='l')
+par(new=T)
+plot(V3~date,data=flow[year(date)==2002],type='l',col='blue')
+par(new=T)
+plot(V3~date,data=temp[year(date)==2002],type='l',col='red')

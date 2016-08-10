@@ -31,6 +31,10 @@ time<-tempData[river=="west brook",date]
 
 coreData[,time:=which(as.Date(detectionDate)==time),by=detectionDate]
 
+meanLength<-coreData[,mean(observedLength),.(river,ageInSamples<=3)] %>%
+            melt(id.vars=c("river","ageInSamples")) %>%
+            acast(river~ageInSamples)
+
 flowData<-tbl(conDplyr,"data_daily_discharge") %>%
   collect(n=Inf) %>%
   data.table() %>%
@@ -69,9 +73,11 @@ scale2<-function(x){
   return(scale(x)[,1])
 }
 
-out<-readRDS("results/processSummationOut.rds")
+out<-readRDS("results/phiChains.rds")
 
-phi<-out$mean$phiBeta
+phi<-apply(out,c(2,3,4),mean)
+rm(out)
+gc()
 
 stds<-list(length=coreData %>% 
              group_by(river) %>%
@@ -85,11 +91,16 @@ stds<-list(length=coreData %>%
            temp=list(meanTemp=apply(tempData,2,mean),
                      sdTemp=apply(tempData,2,sd)))
 
+# rm(coreData)
+rm(jagsData)
+
 flowData<-apply(flowData,2,scale2)
 tempData<-apply(tempData,2,scale2)
 
 flowRange<-apply(flowData,2,range)
 tempRange<-apply(tempData,2,range)
+
+gc()
 
 flowSim<-tempSim<-array(NA,dim=c(100,4))
 for(r in 1:4){
@@ -97,13 +108,11 @@ for(r in 1:4){
   tempSim[,r]<-seq(tempRange[1,r],tempRange[2,r],length.out=100)
 }
 
-
-
 survSim<-array(NA,dim=c(100,100,4,2))
 for(g in 1:2){
   for(r in 1:4){
     for(f in 1:100){
-      survSim[f,,r,g]<-phi[1,r,g]+phi[2,r,g]*flowSim[f,r]+phi[3,r,g]*tempSim[,r]#+
+      survSim[f,,r,g]<-phi[1,r,g]+phi[2,r,g]*flowSim[f,r]+phi[3,r,g]*tempSim[,r]+
         phi[4,r,g]*tempSim[,r]*flowSim[f,r]
     }
   }
