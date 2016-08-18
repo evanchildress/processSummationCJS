@@ -43,22 +43,6 @@ tempData<-tbl(conDplyr,"data_hourly_temperature") %>%
   .[,.(temperature=max(temperature)),by=.(date=as.Date(datetime),
                                           river)] %>%
   setkey(river,date)
-# 
-# load("C:/Users/Evan/Desktop/Conte/perform/data/wbTemps.rData")
-# tempData<-temp %>%
-#   .[datetime>=min(coreData$detectionDate)&
-#     datetime<=max(coreData$detectionDate)] %>%
-#   .[,.(temperature=max(temperature)),by=.(date=as.Date(datetime),
-#                                           river)] %>%
-#   setkey(river,date)
-
-# load("C:/Users/Evan/Desktop/Conte/perform/data/wbTemps.rData")
-# tempData<-temp %>%
-#   .[datetime>=min(coreData$detectionDate)&
-#     datetime<=max(coreData$detectionDate)] %>%
-#   .[,.(temperature=max(temperature)),by=.(date=as.Date(datetime),
-#                                           river)] %>%
-#   setkey(river,date)
 
 if(exists("temp")){rm(temp)}
 time<-tempData[river=="west brook",date] 
@@ -80,34 +64,6 @@ flowData<-tbl(conDplyr,"data_daily_discharge") %>%
                                  ordered=T))] %>%
   melt(id.vars=c("date","river")) %>%
   acast(date~river)
-
-# flowData<-tbl(conDplyr,"data_flow_extension") %>%
-#   collect(n=Inf) %>%
-#   data.table() %>%
-#   .[date>=min(coreData$detectionDate)&
-#       date<=max(coreData$detectionDate)] %>%
-#   .[,discharge:=log(qPredicted+0.74)] %>%
-#   .[,.(date=as.Date(date),river,discharge)]
-# 
-# flowData<-rbind(flowData,flowData,flowData,flowData) %>%
-#   .[,river:=rep(c("west brook","wb jimmy","wb mitchell","wb obear"),each=nrow(flowData))] %>%
-#   .[,river:=as.numeric(factor(river,
-#                               levels=c("west brook",
-#                                        "wb jimmy",
-#                                        "wb mitchell",
-#                                        "wb obear"),
-#                               ordered=T))] %>%
-#   melt(id.vars=c("date","river")) %>%
-#   acast(date~river)
-
-
-# tempData<-tbl(conDplyr,"data_daily_temperature") %>%
-#   # filter(river=="wb obear") %>%
-#   collect(n=Inf) %>%
-#   data.table() %>%
-#   .[date>=min(coreData$detectionDate)&
-#     date<=max(coreData$detectionDate)] %>%
-#   .[,.(date=as.Date(date),river,temperature=daily_max_temp)]
 
 tempData<-tempData  %>%
   .[,.(date,river,temperature)] %>%
@@ -176,26 +132,27 @@ inits<- function(){
 
 # MCMC settings
 na <- 500
-nb <- 5000
-ni <- 8000
-nt <- 1
+nb <- 4000
+ni <- 14000
+nt <- 10
 nc <- 3
 
-varsToMonitor<-c('pBeta','phiBeta','phiSigma','phiEps','z')
+varsToMonitor<-c('pBeta','phiBeta','phiSigma','phiEps')
 
 gc()
 
-  out <- jags(
-    data=jagsData,
-    inits=inits,
-    model = "CjsProcessSummationError.R",
-    parameters.to.save = varsToMonitor,
-    n.adapt=na,
-    n.chains=nc,
-    n.iter = ni,
-    n.thin = nt,
-    n.burnin=nb,
-    parallel=T,
-    codaOnly=c("phiEps","z"))
-
-saveRDS(out,"processSummationOut.rds")
+#   out <- jags(
+#     data=jagsData,
+#     inits=inits,
+#     model = "CjsProcessSummation.R",
+#     parameters.to.save = varsToMonitor,
+#     n.chains=nc,
+#     n.iter = ni,
+#     n.thin = nt,
+#     n.burnin=nb,
+#     parallel=T,
+#     codaOnly=c("phiEps"))
+# 
+# saveRDS(out,"results/processSummationOut.rds")
+saveRDS(coreData,"results/processSummationCoreData.rds")
+saveRDS(jagsData,"results/processSummationJagsData.rds")
