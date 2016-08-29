@@ -40,7 +40,7 @@ tempData<-tbl(conDplyr,"data_hourly_temperature") %>%
   data.table() %>%
   .[datetime>=min(coreData$detectionDate)&
       datetime<=max(coreData$detectionDate)] %>%
-  .[,.(temperature=max(temperature)),by=.(date=as.Date(datetime),
+  .[,.(temperature=mean(temperature)),by=.(date=as.Date(datetime),
                                           river)] %>%
   setkey(river,date)
 
@@ -141,18 +141,18 @@ varsToMonitor<-c('pBeta','phiBeta','phiSigma','phiEps')
 
 gc()
 
-#   out <- jags(
-#     data=jagsData,
-#     inits=inits,
-#     model = "CjsProcessSummation.R",
-#     parameters.to.save = varsToMonitor,
-#     n.chains=nc,
-#     n.iter = ni,
-#     n.thin = nt,
-#     n.burnin=nb,
-#     parallel=T,
-#     codaOnly=c("phiEps"))
-# 
-# saveRDS(out,"results/processSummationOut.rds")
+  out <- jags(
+    data=jagsData,
+    inits=inits,
+    model = "CjsProcessSummation.R",
+    parameters.to.save = varsToMonitor,
+    n.chains=nc,
+    n.iter = ni,
+    n.thin = nt,
+    n.burnin=nb,
+    parallel=T,
+    codaOnly=c("phiEps"))
+
+saveRDS(out,"results/processSummationOut.rds")
 saveRDS(coreData,"results/processSummationCoreData.rds")
 saveRDS(jagsData,"results/processSummationJagsData.rds")
