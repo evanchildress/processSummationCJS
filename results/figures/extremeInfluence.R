@@ -79,13 +79,19 @@ extInf<-surv[,.(westBrookYoy=extremeInfluence(westBrookYoy),
                 obearAdult=extremeInfluence(obearAdult)),
              ,by=year(date)]
 
+palette(c("gray","red","green","blue"))
+
 tiff.par("results/figures/ExtremeInfluence.tif",mfcol=c(1,2),width=6.5,height=4,
          mar=c(2.5,2.5,1,0))
 for(g in c("Yoy","Adult")){
   plot(NA,ylim=c(0,0.5),xlim=c(2002,2015),
        ylab="Proportion Days Accounting for 50% Mortality",xlab="",main=g)
+  if(g=="Yoy"){
+    legend(2005,0.15,c("west brook","jimmy","mitchell","obear"),
+           col=palette()[1:4],lty=1,lwd=2,bty='n')
+  }
   for(r in c("westBrook","jimmy","mitchell","obear")){
-    points(get(paste0(r,g))~year,data=extInf[year>=2002],type='l',
+    points(get(paste0(r,g))~year,data=extInf[year>=2002],type='l',lwd=2,
            col=palette()[which(r==c("westBrook","jimmy","mitchell","obear"))])
   }
 }

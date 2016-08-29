@@ -46,4 +46,7 @@ for(i in sample(1:out$mcmc.info$n.samples,100)){
     
   }
 }
+
+legend(80,0.3,c("west brook","jimmy","mitchell","obear"),
+       lty=1,col=palette()[1:4],bty='n')
 dev.off()
