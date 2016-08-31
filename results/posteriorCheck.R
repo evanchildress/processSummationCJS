@@ -1,5 +1,5 @@
 ##need to set up coreData and have scaled covariates, which can be done by sourcing contourPlots
-source(results/figures/contourPlots.R)
+source("results/figures/contourPlots.R")
 
 coreData[,riverNum:=as.numeric(factor(river,ordered=T,
                                          levels=c("west brook","wb jimmy","wb mitchell","wb obear")))]

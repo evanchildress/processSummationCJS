@@ -7,7 +7,7 @@ library(plotHacks)
 coreData<-readRDS("results/processSummationCoreData.rds")
 jagsData<-readRDS("results/processSummationJagsData.rds")
 stds<-readRDS("results/summationStandards.rds")
-out<-readRDS("processSummationOut.rds")
+out<-readRDS("results/processSummationOut.rds")
 phi<-out$mean$phiBeta
 
 flowData<-jagsData$flowDATA
@@ -51,7 +51,7 @@ tiff.par("results/figures/survivalAcrossSeasons.tif",mfcol=c(4,2),width=6.5,heig
          mar=c(2.5,2.5,1,0))
 for(g in c("Yoy","Adult")){
   for(r in c("westBrook","jimmy","mitchell","obear")){
-    plot(get(paste0(r,g))~yday(date),data=surv[year(date)>=2002],pch=19,col=gray(0.5,0.5),
+    plot(get(paste0(r,g))~yday(date),data=surv[year(date)>=2002],pch=19,col=gray(0.5,0.3),
          ylim=c(0.95,1),
          ylab="Daily Survival Probability",xlab="Day of Year",main=paste(r,g))
     points(get(paste0(r,g))~yday,data=byDay,type='l',lwd=2)
