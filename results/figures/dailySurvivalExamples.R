@@ -40,13 +40,16 @@ points(mitchellAdult~date,data=surv[year(date)==y],type='l',col=palette()[3])
 points(obearAdult~date,data=surv[year(date)==y],type='l',col=palette()[4])
 }
 
-tiff.par("results/figures/dailySurvivalExamples.tif",mfcol=c(3,2),mar=c(2.5,3,0.5,1))
+tiff.par("results/figures/dailySurvivalExamples.tif",mfcol=c(3,2),mar=c(2.5,3,0.5,1),lwd=2)
 plot(westBrookYoy~date,data=surv[year(date)==2008&month(date) %in% c(2,3,4)],
      type='l',col=palette()[1],ylim=c(0.95,1),xlab="",ylab="")
 title(ylab=bquote(YOY~Daily~phi),line=2)
 points(jimmyYoy~date,data=surv[year(date)==2008&month(date) %in% c(2,3,4)],type='l',col=palette()[2])
 points(mitchellYoy~date,data=surv[year(date)==2008&month(date) %in% c(2,3,4)],type='l',col=palette()[3])
 points(obearYoy~date,data=surv[year(date)==2008&month(date) %in% c(2,3,4)],type='l',col=palette()[4])
+legend(as.Date("2008-03-01"),0.98,c("west brook","jimmy","mitchell","obear"),
+       col=palette(),lty=1,bty='n')
+
 
 plot(westBrookAdult~date,data=surv[year(date)==2008&month(date) %in% c(2,3,4)],
      type='l',col=palette()[1],ylim=c(0.95,1),xlab="",ylab="")

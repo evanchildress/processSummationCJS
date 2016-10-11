@@ -153,14 +153,14 @@ ni <- 7000
 nt <- 3
 nc <- 3
 
-varsToMonitor<-c('pBeta','phiBeta','phiSigma','phiEps')
+varsToMonitor<-c('pBeta','phiBeta','phiSigma','phiEps',"pEps","pSigma")
 
 gc()
 
   out <- jags(
     data=jagsData,
     inits=inits,
-    model = "CjsProcessSummation.R",
+    model = "CjsProcessSummationPError.R",
     parameters.to.save = varsToMonitor,
     n.chains=nc,
     n.iter = ni,

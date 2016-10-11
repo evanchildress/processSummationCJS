@@ -7,7 +7,7 @@ coreData<-readRDS("results/processSummationCoreData.rds")
 jagsData<-readRDS("results/processSummationJagsData.rds")
 stds<-readRDS("results/summationStandards.rds")
 
-out<-readRDS("processSummationOut.rds")
+out<-readRDS("results/processSummationOut.rds")
 phi<-out$mean$phiBeta
 
 flowData<-jagsData$flowDATA

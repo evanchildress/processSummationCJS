@@ -1,4 +1,4 @@
-#out<-readRDS("processSummationOut.rds")
+out<-readRDS("results/processSummationOut.rds")
 
 phi<-out$mean$phiBeta
 
