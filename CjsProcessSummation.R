@@ -3,7 +3,8 @@ model{
   for(i in 1:nEvalRows){
     logit( p[ evalRows[i] ] ) <- pBeta[1,riverDATA[evalRows[i]]]+
       pBeta[2,riverDATA[evalRows[i]]]*flowForP[evalRows[i]] +
-      pBeta[3,riverDATA[evalRows[i]]]*lengthDATA[evalRows[i]]
+      pBeta[3,riverDATA[evalRows[i]]]*lengthDATA[evalRows[i]] +
+      pBeta[4,riverDATA[evalRows[i]]]*(nPasses[evalRows[i]]-1)
   }
   
   ############## Recapture priors
@@ -12,7 +13,10 @@ model{
     pBeta[2,r]~dnorm(0,0.66)
     pBeta[3,r]~dnorm(0,0.66)
   }
-  
+  pBeta[4,1]~dnorm(0,0.66)
+  for(r in 2:nRivers){
+    pBeta[4,r]<-0
+  }
   
   
   ##survival priors

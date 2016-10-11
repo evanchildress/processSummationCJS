@@ -20,7 +20,7 @@ for(g in 1:2){
   for(r in 1:4){
     for(f in 1:100){
       survSim[f,,r,g]<-surv<-phi[1,r,g]+phi[2,r,g]*flowSim[f,r]+phi[3,r,g]*tempSim[,r]+
-        phi[4,r,g]*flowSim[f,r]*tempSim[,r]+phi[5,r,g]*tempSim[,r]^2
+        phi[4,r,g]*flowSim[f,r]*tempSim[,r]
     }
   }
 }

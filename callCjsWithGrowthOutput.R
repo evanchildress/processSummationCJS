@@ -3,7 +3,7 @@ library(reshape2)
 library(data.table)
 library(jagsUI)
 reconnect()
-# coreData<-createCoreData(sampleType="electrofishing") %>% 
+# coreData<-createCoreData(sampleType="electrofishing",columnsToAdd="pass") %>%
 #   addTagProperties() %>%
 #   dplyr::filter(species=="bkt") %>%
 #   createCmrData() %>%
@@ -16,7 +16,20 @@ coreData<-readRDS("~/perform/vignettes/westBrook/results/corebkt.rds") %>%
   .[,trueObservedLength:=observedLength] %>%
   .[is.na(observedLength),observedLength:=predictedLength]
   
-  
+nPasses<-tbl(conDplyr,"data_tagged_captures") %>%
+         filter(drainage=="west") %>%
+         select(river,sample_number,pass) %>%
+         distinct() %>%
+         collect() %>%
+         data.table() %>%
+         .[,.(nPasses=length(unique(pass))),by=.(river,sample_number)] %>%
+         setnames("sample_number","sampleNumber") %>%
+         setkey(river,sampleNumber)
+
+setkey(coreData,river,sampleNumber)
+coreData<-nPasses[coreData]
+setkey(coreData,tag,detectionDate)
+coreData[is.na(nPasses)&proportionSampled==0,nPasses:=1] #when proportionSampled==0 no pass info
 #5 of 13504 fish don't have length on first obs, so grab the mean for that age/sample/river 
 getFirstLength<-function(riv,age,sampName){
     coreData[river==riv&ageInSamples %in% age&sampleName %in% sampName,mean(observedLength,na.rm=T),
@@ -40,7 +53,7 @@ tempData<-tbl(conDplyr,"data_hourly_temperature") %>%
   data.table() %>%
   .[datetime>=min(coreData$detectionDate)&
       datetime<=max(coreData$detectionDate)] %>%
-  .[,.(temperature=mean(temperature)),by=.(date=as.Date(datetime),
+  .[,.(temperature=max(temperature)),by=.(date=as.Date(datetime),
                                           river)] %>%
   setkey(river,date)
 
@@ -64,6 +77,8 @@ flowData<-tbl(conDplyr,"data_daily_discharge") %>%
                                  ordered=T))] %>%
   melt(id.vars=c("date","river")) %>%
   acast(date~river)
+
+# flowData[,c(2,3,4)]<-flowData[,1]
 
 tempData<-tempData  %>%
   .[,.(date,river,temperature)] %>%
@@ -105,6 +120,7 @@ for(i in 1:nrow(coreData)){
   timesByRow[i,1:coreData$nTimes[i]]<-coreData$time[i-1]:coreData$time[i]
 }
 jagsData$timesByRow<-timesByRow
+jagsData$nPasses<-coreData$nPasses
 
 stds<-list(length=coreData %>% 
              group_by(river) %>%
@@ -133,8 +149,8 @@ inits<- function(){
 # MCMC settings
 na <- 500
 nb <- 4000
-ni <- 14000
-nt <- 10
+ni <- 7000
+nt <- 3
 nc <- 3
 
 varsToMonitor<-c('pBeta','phiBeta','phiSigma','phiEps')
