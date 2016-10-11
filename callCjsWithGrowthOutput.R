@@ -133,18 +133,18 @@ inits<- function(){
 # MCMC settings
 na <- 500
 nb <- 4000
-ni <- 14000
-nt <- 10
+ni <- 6000
+nt <- 4
 nc <- 3
 
-varsToMonitor<-c('pBeta','phiBeta','phiSigma','phiEps')
+varsToMonitor<-c('pBeta','phiBeta','phiSigma','phiEps',"pEps","pSigma")
 
 gc()
 
   out <- jags(
     data=jagsData,
     inits=inits,
-    model = "CjsProcessSummation.R",
+    model = "CjsProcessSummationPError.R",
     parameters.to.save = varsToMonitor,
     n.chains=nc,
     n.iter = ni,

@@ -3,8 +3,8 @@ model{
   for(t in 1:nTimes){
     logitPhiExp[t]<- phiBeta[1]
                  +phiBeta[2]*flows[t]
-                 # +phiBeta[3]*flows[t]^2
                  +phiBeta[3]*temps[t]
+                 +phiBeta[4]*temps[t]*flows[t]
     phiExp[t]<-1/(1+(exp(-logitPhiExp[t])))
   }
   

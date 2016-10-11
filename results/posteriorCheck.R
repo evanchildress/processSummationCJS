@@ -42,19 +42,19 @@ predictObs<-function(pFlow,length,river,ageInSamples,time,propSampled,mcmcIter){
 }
 
 it<-sample(1:out$mcmc.info$n.samples,20)
-predicted<-matrix(ncol=length(it),nrow=nrow(unique(coreData[firstObs!=TRUE,.(sampleNumber,river)])))
+predicted<-matrix(ncol=length(it),nrow=nrow(unique(coreData[firstObs!=TRUE&sampleNumber>28,.(sampleNumber,river)])))
 
 for(i in 1:length(it)){
   coreData[,predictedObs:=predictObs(scaledFlowForP,scaledLength,
                                      riverNum,ageInSamples,time,proportionSampled,it[i]),by=tag]
   
-  predicted[,i]<-coreData[firstObs!=TRUE,sum(predictedObs),by=.(sampleNumber,river)] %>%
+  predicted[,i]<-coreData[firstObs!=TRUE&sampleNumber>28,sum(predictedObs),by=.(sampleNumber,river)] %>%
                  melt(id.vars=c("sampleNumber","river")) %>%
                  .[,value]
   cat(i,"\n")
 }
 
-observed<-coreData[firstObs!=TRUE,sum(enc),by=.(sampleNumber,river)] %>%
+observed<-coreData[firstObs!=TRUE&sampleNumber>28,sum(enc),by=.(sampleNumber,river)] %>%
   melt(id.vars=c("sampleNumber","river")) %>%
   .[,value]
 

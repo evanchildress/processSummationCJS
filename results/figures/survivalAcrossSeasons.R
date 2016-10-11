@@ -38,6 +38,17 @@ byDay<-surv[,.(westBrookYoy=mean(westBrookYoy),
             by=yday(date)] %>%
   setkey(yday)
 
+byDayMedian<-surv[,.(westBrookYoy=median(westBrookYoy),
+               jimmyYoy=median(jimmyYoy),
+               mitchellYoy=median(mitchellYoy),
+               obearYoy=median(obearYoy),
+               westBrookAdult=median(westBrookAdult),
+               jimmyAdult=median(jimmyAdult),
+               mitchellAdult=median(mitchellAdult),
+               obearAdult=median(obearAdult)),
+            by=yday(date)] %>%
+  setkey(yday)
+
 coldTemp<-hotTemp<-matrix(nrow=nrow(tempData),ncol=ncol(tempData))
 lowFlow<-highFlow<-matrix(nrow=nrow(flowData),ncol=ncol(flowData))
 for(r in 1:4){
@@ -47,19 +58,38 @@ for(r in 1:4){
   highFlow[,r]<-flowData[,r]>quantile(tempData[,r],0.95)
 }
 
-tiff.par("results/figures/survivalAcrossSeasons.tif",mfcol=c(4,2),width=6.5,height=8,
-         mar=c(2.5,2.5,1,0))
+labPos<-yday(seq.Date(as.Date("2000-01-01"),as.Date("2000-12-01"),"months"))
+labs<-c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+
+tiff.par("results/figures/survivalAcrossSeasonsMedian.tif",mfcol=c(4,2),width=6.5,height=8,
+         mar=c(2.5,3,1,0))
 for(g in c("Yoy","Adult")){
   for(r in c("westBrook","jimmy","mitchell","obear")){
-    plot(get(paste0(r,g))~yday(date),data=surv[year(date)>=2002],pch=19,col=gray(0.5,0.3),
-         ylim=c(0.95,1),
-         ylab="Daily Survival Probability",xlab="Day of Year",main=paste(r,g))
-    points(get(paste0(r,g))~yday,data=byDay,type='l',lwd=2)
+    plot(get(paste0(r,g))~yday(date),data=surv[year(date)>=2002],pch=19,col=gray(0.5,0.2),
+         ylim=c(0.95,1),xaxt='n',
+         ylab="",xlab="",main=paste(r,g))
+    axis(1,labPos,labs)
+    title(ylab="Daily Survival Probability",line=2.2)
+    #points(get(paste0(r,g))~yday,data=byDay,type='l',lwd=2)
+    points(get(paste0(r,g))~yday,data=byDayMedian,type='l',lwd=2)
   }
 }
 dev.off()
 
-
+tiff.par("results/figures/survivalAcrossSeasonsMean.tif",mfcol=c(4,2),width=6.5,height=8,
+         mar=c(2.5,3,1,0))
+for(g in c("Yoy","Adult")){
+  for(r in c("westBrook","jimmy","mitchell","obear")){
+    plot(get(paste0(r,g))~yday(date),data=surv[year(date)>=2002],pch=19,col=gray(0.5,0.2),
+         ylim=c(0.95,1),xaxt='n',
+         ylab="",xlab="",main=paste(r,g))
+    axis(1,labPos,labs)
+    title(ylab="Daily Survival Probability",line=2.2)
+    points(get(paste0(r,g))~yday,data=byDay,type='l',lwd=2)
+    # points(get(paste0(r,g))~yday,data=byDayMedian,type='l',lwd=2)
+  }
+}
+dev.off()
 
 
 

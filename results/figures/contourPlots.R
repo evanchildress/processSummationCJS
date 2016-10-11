@@ -52,14 +52,13 @@ for(g in 1:2){
             seq(tempRange[1,r],tempRange[2,r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r],length.out=100),
             survSim[,,r,g],add=T,lwd=2,nlevels=30)
     hull<-chull(flowData[,r],tempData[,r])
-#     polygon(c(par("usr")[2],flowData[2:nrow(flowData),r][hull],
-#               flowData[2:nrow(flowData),r][hull[1]],par("usr")[c(2,2,1,1,2)]),
-#             c(par("usr")[4],I(tempData[hull,r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r]),
-#               I(tempData[hull[1],r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r]),par("usr")[c(4,3,3,4,4)]),
-#             border=NA,col='white')
-    polygon(flowData[,r][hull],
-            I(tempData[hull,r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r]),
-            lty=2)
+    polygon(c(par("usr")[2],flowData[,r][hull],flowData[,r][hull[1]],par("usr")[c(2,2,1,1,2)]),
+            c(par("usr")[4],I(tempData[hull,r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r]),
+              I(tempData[hull[1],r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r]),par("usr")[c(4,3,3,4,4)]),
+            border=NA,col="white")
+#     polygon(flowData[,r][hull],
+#             I(tempData[hull,r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r]),
+#             lty=2)
     box()
     
   }
