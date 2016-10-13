@@ -83,13 +83,13 @@ flowData<-tbl(conDplyr,"data_daily_discharge") %>%
 #   acast(date~river)
 
 
-tempData<-tbl(conDplyr,"data_daily_temperature") %>%
-  # filter(river=="wb obear") %>%
-  collect(n=Inf) %>%
-  data.table() %>%
-  .[date>=min(coreData$detectionDate)&
-    date<=max(coreData$detectionDate)] %>%
-  .[,.(date=as.Date(date),river,temperature=daily_max_temp)]
+# tempData<-tbl(conDplyr,"data_daily_temperature") %>%
+#   # filter(river=="wb obear") %>%
+#   collect(n=Inf) %>%
+#   data.table() %>%
+#   .[date>=min(coreData$detectionDate)&
+#     date<=max(coreData$detectionDate)] %>%
+#   .[,.(date=as.Date(date),river,temperature=daily_max_temp)]
 
 tempData<-tempData  %>%
   .[,.(date,river,temperature)] %>%
@@ -159,7 +159,7 @@ inits<- function(){
 # MCMC settings
 na <- 500
 nb <- 30000
-ni <- 45000
+ni <- 40000
 nt <- 3
 nc <- 3
 

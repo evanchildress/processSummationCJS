@@ -1,8 +1,10 @@
-#out<-readRDS("processSummationOut.rds")
+out<-readRDS("results/processSummationOut.rds")
 
 phi<-out$mean$phiBeta
 
-flowData<-apply(flowData,2,scale2)
+# flowData<-apply(flowData,2,scale2)
+flowData<-jagsData$flowDATA
+tempData<-jagsData$tempDATA
 
 flowRange<-apply(flowData,2,range)
 tempRange<-apply(tempData,2,range)
@@ -17,8 +19,8 @@ survSim<-array(NA,dim=c(100,100,4,2))
 for(g in 1:2){
   for(r in 1:4){
     for(f in 1:100){
-      survSim[f,,r,g]<-surv<-phi[1,r,g]+phi[2,r,g]*flowSim[f,r]+phi[3,r,g]*flowSim[f,r]^2+
-        phi[4,r,g]*tempSim[,r]#+phi[5,r,g]*tempSim[,r]*flowSim[f,r]
+      survSim[f,,r,g]<-surv<-phi[1,r,g]+phi[2,r,g]*flowSim[f,r]+phi[3,r,g]*tempSim[,r]+
+        phi[4,r,g]*flowSim[f,r]*tempSim[,r]
     }
   }
 }
@@ -101,13 +103,13 @@ setnames(surv,c("index","westBrookYoy","jimmyYoy","mitchellYoy","obearYoy",
 # plot(mitchellYoy~date,data=surv,type='l',col='blue',ylim=c(0.85,1))
 # points(mitchellAdult~date,data=surv,type='l')
 
-plot(NA,xlim=c(-10,3),ylim=c(0,1))
+plot(NA,xlim=c(-4,4),ylim=c(0.95,1))
   points(survFlow$westBrookYoy~flowData[,1],pch=19,col=palette()[1])
   points(survFlow$jimmyYoy~flowData[,2],pch=19,col=palette()[2])
   points(survFlow$mitchellYoy~flowData[,3],pch=19,col=palette()[3])
   points(survFlow$obearYoy~flowData[,4],pch=19,col=palette()[4])
 
-plot(NA,xlim=c(-10,3),ylim=c(0,1))
+plot(NA,xlim=c(-4,4),ylim=c(0.95,1))
   points(survFlow$westBrookAdult~flowData[,1],pch=19,col=palette()[1])
   points(survFlow$jimmyAdult~flowData[,2],pch=19,col=palette()[2])
   points(survFlow$mitchellAdult~flowData[,3],pch=19,col=palette()[3])
