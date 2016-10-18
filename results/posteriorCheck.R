@@ -12,7 +12,7 @@ coreData[time==5681,time:=5680]
 coreData[,firstObs:=detectionDate==min(detectionDate),by=tag]
 
 
-predictObs<-function(pFlow,length,river,ageInSamples,time,propSampled,mcmcIter,nPasses){
+predictObs<-function(pFlow,length,river,ageInSamples,time,propSampled,mcmcIter,nPasses,sampleNumber){
   stage<-as.numeric(ageInSamples>=4)+1
   
   alive<-obs<-rep(0,length(time))
@@ -24,8 +24,9 @@ predictObs<-function(pFlow,length,river,ageInSamples,time,propSampled,mcmcIter,n
     }
     phiBeta<-out$sims.list$phiBeta[mcmcIter,,river[t-1],stage[t-1]]
     pBeta<-out$sims.list$pBeta[mcmcIter,,river[t]]
-    
-    p<-pBeta[1]+pBeta[2]*pFlow[t]+pBeta[3]*length[t]+pBeta[4]*(nPasses-1)
+    pEps<-out$sims.list$pEps[mcmcIter,river[t],sampleNumber[t]]
+    p<-pBeta[1]+pBeta[2]*pFlow[t]+pBeta[3]*length[t]+pBeta[4]*(nPasses[t]-1)+pEps
+
     p<-plogis(p)*propSampled[t]
     
     logitPhi<-phiBeta[1]+
@@ -46,7 +47,8 @@ predicted<-matrix(ncol=length(it),nrow=nrow(unique(coreData[firstObs!=TRUE&sampl
 
 for(i in 1:length(it)){
   coreData[,predictedObs:=predictObs(scaledFlowForP,scaledLength,
-                                     riverNum,ageInSamples,time,proportionSampled,it[i],nPasses),by=tag]
+                                     riverNum,ageInSamples,time,proportionSampled,it[i],
+                                     nPasses,sampleIndex),by=tag]
   
   predicted[,i]<-coreData[firstObs!=TRUE&sampleNumber>28,sum(predictedObs),by=.(sampleNumber,river)] %>%
                  melt(id.vars=c("sampleNumber","river")) %>%

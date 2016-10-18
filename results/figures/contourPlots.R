@@ -50,7 +50,7 @@ for(g in 1:2){
             main=paste(c("west brook","wb jimmy","wb mitchell","wb obear")[r],c("yoy","adults")[g]))
     contour(seq(flowRange[1,r],flowRange[2,r],length.out=100),
             seq(tempRange[1,r],tempRange[2,r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r],length.out=100),
-            survSim[,,r,g],add=T,lwd=2,nlevels=30)
+            survSim[,,r,g],add=T,lwd=2,nlevels=10)
     hull<-chull(flowData[,r],tempData[,r])
     polygon(c(par("usr")[2],flowData[,r][hull],flowData[,r][hull[1]],par("usr")[c(2,2,1,1,2)]),
             c(par("usr")[4],I(tempData[hull,r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r]),

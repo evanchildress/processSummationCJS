@@ -5,3 +5,7 @@
 *.tif
 *.csv
 .rds
+.pdf
+.doc
+.docx
+manuscript/
