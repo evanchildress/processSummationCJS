@@ -43,12 +43,18 @@ tiff.par("results/figures/detectionEffects.tif",width=6.5,height=7.5,mar=c(2.5,2
 for(r in 1:4){
   plot(NA,xlim=range(lengthSimReal),ylim=c(0,1),
        xlab="Fork Length (mm)",ylab="")
+  panelLabel(bquote(bold(.(c("a","b","c","d")[r]))),xadj=0.025)
   title(ylab="Probability of Detection",line=1.7)
   for(i in iters){
     lengthEffect[,r]<-plogis(out$sims.list$pBeta[i,1,r]+out$sims.list$pBeta[i,3,r]*lengthSim[,r]+
                         out$sims.list$pBeta[i,4,r])
     
     points(lengthEffect[,r]~lengthSimReal[,r],type='l',col=colors[r])
+    
+    if(r==1){
+      lengthEffect[,r]<-plogis(out$sims.list$pBeta[i,1,r]+out$sims.list$pBeta[i,3,r]*lengthSim[,r])
+      points(lengthEffect[,r]~lengthSimReal[,r],type='l',col=rgb(0,0,1,0.1))
+    }
   }
 }
 
@@ -56,12 +62,18 @@ for(r in 1:4){
 for(r in 1:4){
   plot(NA,xlim=range(flowForPSim),ylim=c(0,1),
        xlab="Discharge During Sample",ylab="")
+  panelLabel(bquote(bold(.(c("e","f","g","h")[r]))),xadj=0.025)
   title(ylab="Probability of Detection",line=1.7)
   for(i in iters){
 
   flowEffect[,r]<-plogis(out$sims.list$pBeta[i,1,r]+out$sims.list$pBeta[i,2,r]*flowForPSim[,r]+
                     out$sims.list$pBeta[i,4,r])
   points(flowEffect[,r]~flowForPSim[,r],type='l',col=colors[r])
+  if(r==1){
+    lengthEffect[,r]<-plogis(out$sims.list$pBeta[i,1,r]+out$sims.list$pBeta[i,2,r]*flowForPSim[,r])
+    points(lengthEffect[,r]~flowForPSim[,r],type='l',col=rgb(0,0,1,0.1))
+  }
+  
   }
 }
 
