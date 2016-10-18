@@ -4,7 +4,8 @@ model{
     logit( p[ evalRows[i] ] ) <- pBeta[1,riverDATA[evalRows[i]]]+
       pBeta[2,riverDATA[evalRows[i]]]*flowForP[evalRows[i]] +
       pBeta[3,riverDATA[evalRows[i]]]*lengthDATA[evalRows[i]] +
-      pBeta[4,riverDATA[evalRows[i]]]*(nPasses[evalRows[i]]-1)
+      pBeta[4,riverDATA[evalRows[i]]]*(nPasses[evalRows[i]]-1) +
+      pEps[riverDATA[evalRows[i]],sample[evalRows[i]]]
   }
   
   ############## Recapture priors
@@ -12,11 +13,17 @@ model{
     pBeta[1,r]~dnorm(0,0.66)
     pBeta[2,r]~dnorm(0,0.66)
     pBeta[3,r]~dnorm(0,0.66)
+    for(s in 1:nSamples){
+      pEps[r,s]~dnorm(0,pTau)
+    }
   }
   pBeta[4,1]~dnorm(0,0.66)
   for(r in 2:nRivers){
     pBeta[4,r]<-0
   }
+  
+  pTau<-1/pow(pSigma,2)
+  pSigma~dunif(0,10)
   
   
   ##survival priors
@@ -31,7 +38,13 @@ model{
     phiBeta[5,r,2]<-phiBeta[5,r,1]
   }
   
-  
+  # phiTau<-1/pow(phiSigma,2)
+  # phiSigma~dunif(0,10)
+  # for(r in 1:nRivers){
+  #   for(s in 1:nSamples){
+  #     phiEps[r,s]~dnorm(0,phiTau)
+  #   }
+  # }
   
   for(t in 1:nTimes){
     for(r in 1:nRivers){
@@ -57,8 +70,10 @@ model{
       phiBeta[5,
               riverDATA[evalRows[i]-1],
               stageDATA[evalRows[i]-1]]*
-      lengthDATA[evalRows[i]-1]
-    
+      lengthDATA[evalRows[i]-1] #+
+      # phiEps[riverDATA[evalRows[i]-1],
+      #        sample[evalRows[i]-1]]
+      # 
     survProb[evalRows[i]]<-1/(1+exp(-logitSurvProb[evalRows[i]]))*z[evalRows[i]-1]
     
     # Observation of live encounters
