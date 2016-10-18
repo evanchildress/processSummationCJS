@@ -25,7 +25,8 @@ predictObs<-function(pFlow,length,river,ageInSamples,time,propSampled,mcmcIter,n
     phiBeta<-out$sims.list$phiBeta[mcmcIter,,river[t-1],stage[t-1]]
     pBeta<-out$sims.list$pBeta[mcmcIter,,river[t]]
     pEps<-out$sims.list$pEps[mcmcIter,river[t],sampleNumber[t]]
-    p<-pBeta[1]+pBeta[2]*pFlow[t]+pBeta[3]*length[t]+pBeta[4]*nPasses[t]+pEps
+    p<-pBeta[1]+pBeta[2]*pFlow[t]+pBeta[3]*length[t]+pBeta[4]*(nPasses[t]-1)+pEps
+
     p<-plogis(p)*propSampled[t]
     
     logitPhi<-phiBeta[1]+

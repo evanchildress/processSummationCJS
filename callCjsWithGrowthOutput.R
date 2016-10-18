@@ -14,7 +14,26 @@ reconnect()
 
 coreData<-readRDS("~/perform/vignettes/westBrook/results/corebkt.rds") %>%
   .[,trueObservedLength:=observedLength] %>%
-  .[is.na(observedLength),observedLength:=predictedLength]
+  .[is.na(observedLength),observedLength:=predictedLength] %>%
+  setkey(tag)
+
+em<-tbl(conDplyr,"data_by_tag") %>%
+     filter(species=="bkt") %>%
+     collect() %>% 
+     data.table() %>%
+     setnames(camelCase(names(.))) %>%
+     .[tag %in% coreData$tag,.(tag,
+                               dateEmigrated=as.POSIXct(dateEmigrated),
+                               lastAntennaDetection)] %>%
+     setkey(tag)
+
+coreData<-em[coreData] %>%
+          .[detectionDate<=dateEmigrated|is.na(dateEmigrated)]
+rm(em)
+
+setkey(coreData,tag,detectionDate)
+
+
   
 nPasses<-tbl(conDplyr,"data_tagged_captures") %>%
          filter(drainage=="west") %>%
@@ -160,7 +179,7 @@ gc()
   out <- jags(
     data=jagsData,
     inits=inits,
-    model = "CjsProcessSummationPError.R",
+    model = "CjsProcessSummation.R",
     parameters.to.save = varsToMonitor,
     n.chains=nc,
     n.iter = ni,
