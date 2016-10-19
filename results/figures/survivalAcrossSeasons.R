@@ -14,10 +14,19 @@ flowData<-jagsData$flowDATA
 tempData<-jagsData$tempDATA
 
 surv<-array(dim=c(nrow(flowData),4,2))
+coreData[,stage:=as.numeric(ageInSamples>3)+1]
+
+meanLength<-coreData[enc==1,mean(observedLength),by=.(river,stage)] %>%
+            .[,river2:=match(river,c("west brook","wb jimmy","wb mitchell","wb obear"))] %>%
+            .[,.(river2,stage,V1)] %>%
+            .[,V1:=(V1-stds$length$meanLength[river2])/stds$length$sdLength[river2]] %>%
+            melt(id.vars=c("river2","stage")) %>%
+            acast(river2~stage)
 
 for(g in 1:2){
   for(r in 1:4){
-    surv[,r,g]<-phi[1,r,g]+phi[2,r,g]*flowData[,r]+phi[3,r,g]*tempData[,r]+phi[4,r,g]*tempData[,r]*flowData[,r]
+    surv[,r,g]<-phi[1,r,g]+phi[2,r,g]*flowData[,r]+phi[3,r,g]*tempData[,r]+phi[4,r,g]*tempData[,r]*flowData[,r]+
+      phi[5,r,g]*meanLength[r,g]
   }
 }
 surv<-melt(1/(1+exp(-surv))) %>% dcast(Var1~Var3+Var2) %>% data.table()
@@ -66,9 +75,10 @@ tiff.par("results/figures/survivalAcrossSeasonsMedian.tif",mfcol=c(4,2),width=6.
 for(g in c("Yoy","Adult")){
   for(r in c("westBrook","jimmy","mitchell","obear")){
     plot(get(paste0(r,g))~yday(date),data=surv[year(date)>=2002],pch=19,col=gray(0.5,0.2),
-         ylim=c(0.95,1),xaxt='n',
+         ylim=c(0.97,1),xaxt='n',yaxt='n',
          ylab="",xlab="",main=paste(r,g))
     axis(1,labPos,labs)
+    axis(2,seq(0.97,1,0.01))
     title(ylab="Daily Survival Probability",line=2.2)
     #points(get(paste0(r,g))~yday,data=byDay,type='l',lwd=2)
     points(get(paste0(r,g))~yday,data=byDayMedian,type='l',lwd=2)
