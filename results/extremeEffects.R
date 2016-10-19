@@ -24,6 +24,15 @@ meanLength<-coreData[enc==1,mean(observedLength),by=.(river,stage)] %>%
   melt(id.vars=c("river2","stage")) %>%
   acast(river2~stage)
 
+coldTemp<-hotTemp<-matrix(nrow=nrow(tempData),ncol=ncol(tempData))
+lowFlow<-highFlow<-matrix(nrow=nrow(flowData),ncol=ncol(flowData))
+for(r in 1:4){
+  hotTemp[,r]<-tempData[,r]>=quantile(tempData[,r],0.975)
+  coldTemp[,r]<-tempData[,r]<=quantile(tempData[,r],0.025)
+  lowFlow[,r]<-flowData[,r]<=quantile(tempData[,r],0.025)
+  highFlow[,r]<-flowData[,r]>=quantile(tempData[,r],0.975)
+}
+
 iter<-sample(1:out$mcmc.info$n.samples,10)
 iter<-1:out$mcmc.info$n.samples
 
@@ -94,66 +103,62 @@ annualSurvLower<-survLower[,.(westBrookYoy=plogis(qlogis(prod(westBrookYoy))+phi
                               obearAdult=plogis(qlogis(prod(obearAdult))+phi[5,4,1]*meanLength[4,2])),
                            by=survivalYear]
 
-tiff.par("results/figures/annualSurvival2.tif",mfrow=c(1,2),
+drought<-flood<-years<-data.table(year=2002:2014,key="year")
+for(riv in c("westBrook","jimmy","mitchell","obear")){
+  for(stage in c("Yoy","Adult")){
+    r<-which(riv==c("westBrook","jimmy","mitchell","obear"))
+    ext<-surv[lowFlow[,r]&survivalYear %in% 2002:2014,1-prod(get(paste0(riv,stage))),survivalYear] %>%
+         setkey(survivalYear) %>%
+         .[years] %>%
+         .[is.na(V1),V1:=0]
+    other<-surv[!lowFlow[,r]&survivalYear %in% 2002:2014,1-prod(get(paste0(riv,stage))),survivalYear]
+    drought[[paste0(riv,stage)]]<-ext$V1/(ext$V1+other$V1)
+    
+    ext<-surv[highFlow[,r]&survivalYear %in% 2002:2014,1-prod(get(paste0(riv,stage))),survivalYear] %>%
+      setkey(survivalYear) %>%
+      .[years] %>%
+      .[is.na(V1),V1:=0]
+    other<-surv[!lowFlow[,r]&survivalYear %in% 2002:2014,1-prod(get(paste0(riv,stage))),survivalYear]
+    flood[[paste0(riv,stage)]]<-ext$V1/(ext$V1+other$V1)
+  }
+}
+
+tiff.par("results/figures/extremeEffects.tif",mfrow=c(2,2),
          mgp=c(1.7,0.5,0),width=6.5,height=4,mar=c(1.5,2.5,0,0.4))
 
 for(stage in c("Yoy","Adult")){
   plot(NA,xlim=c(2002,2014),ylim=c(0,1),xlab="",
-       ylab=paste(ifelse(stage=="Yoy","Juvenile","Adult"),"Annual Survival Probability"))
-  panelLabel(c("a","b")[which(stage==c("Yoy","Adult"))])
+       ylab=paste("Proportion",ifelse(stage=="Yoy","Juvenile","Adult"),"Mortality during Low Flow"))
+  panelLabel(bquote(bold(.(c("a","b")[which(stage==c("Yoy","Adult"))]))))
   
   for(riv in c("westBrook","jimmy","mitchell","obear")){
 #     g<-which(stage==c("Yoy","Adult"))
 #     r<-which(riv==c("westBrook","jimmy","mitchell","obear"))
-    points(get(paste0(riv,stage))~survivalYear,data=annualSurv[survivalYear>=2002&survivalYear<2015],type='l',
+    points(get(paste0(riv,stage))~year,data=drought,type='l',
       col=colors[which(riv==c("westBrook","jimmy","mitchell","obear"))],lwd=2)
-    points(get(paste0(riv,stage))~survivalYear,data=annualSurvUpper[survivalYear>=2002&survivalYear<2015],type='l',
-           col=colors[which(riv==c("westBrook","jimmy","mitchell","obear"))],lty=2,lwd=0.5)
-    points(get(paste0(riv,stage))~survivalYear,data=annualSurvLower[survivalYear>=2002&survivalYear<2015],type='l',
-           col=colors[which(riv==c("westBrook","jimmy","mitchell","obear"))],lty=2,lwd=0.5)
+#     points(get(paste0(riv,stage))~survivalYear,data=annualSurvUpper[survivalYear>=2002&survivalYear<2015],type='l',
+#            col=colors[which(riv==c("westBrook","jimmy","mitchell","obear"))],lty=2,lwd=0.5)
+#     points(get(paste0(riv,stage))~survivalYear,data=annualSurvLower[survivalYear>=2002&survivalYear<2015],type='l',
+#            col=colors[which(riv==c("westBrook","jimmy","mitchell","obear"))],lty=2,lwd=0.5)
   }
 }
-legend(2004.5,1.03,c("West Brook","Open Large","Open Small","Isolated Small"),
-       col=colors[1:4],lty=1,lwd=2,bty='n')
+
+for(stage in c("Yoy","Adult")){
+  plot(NA,xlim=c(2002,2014),ylim=c(0,1),xlab="",
+       ylab=paste("Proportion",ifelse(stage=="Yoy","Juvenile","Adult"),"Mortality during High Flow"))
+  panelLabel(bquote(bold(.(c("c","d")[which(stage==c("Yoy","Adult"))]))))
+  
+  for(riv in c("westBrook","jimmy","mitchell","obear")){
+    #     g<-which(stage==c("Yoy","Adult"))
+    #     r<-which(riv==c("westBrook","jimmy","mitchell","obear"))
+    points(get(paste0(riv,stage))~year,data=flood,type='l',
+           col=colors[which(riv==c("westBrook","jimmy","mitchell","obear"))],lwd=2)
+    #     points(get(paste0(riv,stage))~survivalYear,data=annualSurvUpper[survivalYear>=2002&survivalYear<2015],type='l',
+    #            col=colors[which(riv==c("westBrook","jimmy","mitchell","obear"))],lty=2,lwd=0.5)
+    #     points(get(paste0(riv,stage))~survivalYear,data=annualSurvLower[survivalYear>=2002&survivalYear<2015],type='l',
+    #            col=colors[which(riv==c("westBrook","jimmy","mitchell","obear"))],lty=2,lwd=0.5)
+  }
+}
+# legend(2004.5,1.03,c("West Brook","Open Large","Open Small","Isolated Small"),
+#        col=colors[1:4],lty=1,lwd=2,bty='n')
 dev.off()
-
-streamSize<-tbl(conDplyr,"data_daily_discharge") %>%
-  collect(n=Inf) %>%
-  data.table() %>%
-  .[date>=as.Date(min(coreData$detectionDate))&
-      date<=as.Date(max(coreData$detectionDate))] %>%
-  .[,.(medianQ=median(discharge)),by=river] %>%
-  setkey(river)
-
-cv<-function(x,na.rm=F) sd(x,na.rm=na.rm)/mean(x,na.rm=na.rm)
-annualSurv<-annualSurv[survivalYear %in% 2002:2014]
-annualCv<-annualSurv[,.(westBrookYoy=cv(westBrookYoy),
-                        jimmyYoy=cv(jimmyYoy),
-                        mitchellYoy=cv(mitchellYoy),
-                        obearYoy=cv(obearYoy),
-                        westBrookAdult=cv(westBrookAdult),
-                        jimmyAdult=cv(jimmyAdult),
-                        mitchellAdult=cv(mitchellAdult),
-                        obearAdult=cv(obearAdult))]
-
-surv<-surv[survivalYear %in% 2002:2014]
-overallCv<-surv[,.(westBrookYoy=cv(westBrookYoy),
-                        jimmyYoy=cv(jimmyYoy),
-                        mitchellYoy=cv(mitchellYoy),
-                        obearYoy=cv(obearYoy),
-                        westBrookAdult=cv(westBrookAdult),
-                        jimmyAdult=cv(jimmyAdult),
-                        mitchellAdult=cv(mitchellAdult),
-                        obearAdult=cv(obearAdult))]
-survCv<-data.table(river=rep(c("west brook","wb jimmy","wb mitchell","wb obear"),2),
-                      stage=rep(c("yoy","adult"),each=4),
-                      overallCv=as.matrix(overallCv[1])[1,],
-                      annualCv=as.matrix(annualCv[1])[1,]) %>%
-  setkey(river)
-
-survCv<-streamSize[survCv]
-par(mfrow=c(2,2))
-plot(log(overallCv)~log(medianQ),data=survCv[stage=="yoy"])
-plot(log(overallCv)~log(medianQ),data=survCv[stage=="adult"])
-plot(log(annualCv)~log(medianQ),data=survCv[stage=="yoy"])
-plot(log(annualCv)~log(medianQ),data=survCv[stage=="adult"])
