@@ -5,7 +5,7 @@ library(jagsUI)
 library(plotHacks)
 
 colors<-c(gray(0.1,.1),rgb(1,0,0,0.1),rgb(0,1,0,0.1),rgb(0,0,1,0.1))
-colors<-palette()
+colors<-c("black","red","green","blue")
 
 coreData<-readRDS("results/processSummationCoreData.rds")
 jagsData<-readRDS("results/processSummationJagsData.rds")
