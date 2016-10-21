@@ -38,8 +38,7 @@ for(it in 1:length(iter)){
   
   for(g in 1:2){
     for(r in 1:4){
-      surv[it,,r,g]<-phi[1,r,g]+phi[2,r,g]*flowData[,r]+phi[3,r,g]*tempData[,r]+phi[4,r,g]*tempData[,r]*flowData[,r]+
-        phi[5,r,g]*meanLength[r,g]
+      surv[it,,r,g]<-phi[1,r,g]+phi[2,r,g]*flowData[,r]+phi[3,r,g]*tempData[,r]+phi[4,r,g]*tempData[,r]*flowData[,r]
     }
   }
 }
