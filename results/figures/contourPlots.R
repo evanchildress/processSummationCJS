@@ -10,6 +10,14 @@ stds<-readRDS("results/summationStandards.rds")
 out<-readRDS("results/processSummationOut.rds")
 phi<-out$mean$phiBeta
 
+coreData[,stage:=as.numeric(ageInSamples>3)+1]
+meanLength<-coreData[enc==1,mean(observedLength),by=.(river,stage)] %>%
+  .[,river2:=match(river,c("west brook","wb jimmy","wb mitchell","wb obear"))] %>%
+  .[,.(river2,stage,V1)] %>%
+  .[,V1:=(V1-stds$length$meanLength[river2])/stds$length$sdLength[river2]] %>%
+  melt(id.vars=c("river2","stage")) %>%
+  acast(river2~stage)
+
 flowData<-jagsData$flowDATA
 tempData<-jagsData$tempDATA
 
@@ -27,7 +35,7 @@ for(g in 1:2){
   for(r in 1:4){
     for(f in 1:100){
       survSim[f,,r,g]<-phi[1,r,g]+phi[2,r,g]*flowSim[f,r]+phi[3,r,g]*tempSim[,r]+
-        phi[4,r,g]*tempSim[,r]*flowSim[f,r]
+        phi[4,r,g]*tempSim[,r]*flowSim[f,r] + phi[5,r,g]*meanLength[r,g]
     }
   }
 }
@@ -44,13 +52,13 @@ for(g in 1:2){
     image(seq(flowRange[1,r],flowRange[2,r],length.out=100),
             seq(tempRange[1,r],tempRange[2,r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r],length.out=100),
             survSim[,,r,g],
-            zlim=c(0.85,1.0),
+            zlim=c(0.88,1.0),
             col=colors,
             xlab="Scaled log(Discharge)",ylab=bquote(Temperature~(degree*C)),
             main=paste(c("west brook","wb jimmy","wb mitchell","wb obear")[r],c("yoy","adults")[g]))
     contour(seq(flowRange[1,r],flowRange[2,r],length.out=100),
             seq(tempRange[1,r],tempRange[2,r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r],length.out=100),
-            survSim[,,r,g],add=T,lwd=2,nlevels=10)
+            survSim[,,r,g],add=T,lwd=2,nlevels=30)
     hull<-chull(flowData[,r],tempData[,r])
     polygon(c(par("usr")[2],flowData[,r][hull],flowData[,r][hull[1]],par("usr")[c(2,2,1,1,2)]),
             c(par("usr")[4],I(tempData[hull,r]*stds$temp$sdTemp[r]+stds$temp$meanTemp[r]),
