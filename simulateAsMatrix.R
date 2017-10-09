@@ -1,13 +1,10 @@
 library(data.table)
 library(jagsUI)
 
-pBeta<-runif(1,0,2.197225)
-phiBeta<-c(runif(1,5,9),runif(1,-2,2),runif(1,-2,2),runif(1,-2,2))
-
-
 load("envForSims.RData")
-simNum<- as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
-set.seed(simNum)
+# simNum<- as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
+# set.seed(simNum)
+simNum<-1
 
 getSurvival<-function(startTime,endTime,flow,temp,beta,sigma=0){
   logitPhi<-phiBeta[1]+phiBeta[2]*flow[startTime:endTime]+
@@ -15,7 +12,7 @@ getSurvival<-function(startTime,endTime,flow,temp,beta,sigma=0){
     phiBeta[4]*flow[startTime:endTime]*temp[startTime:endTime]
   phi<-prod(1/(1+exp(-logitPhi)))
   
-  phi<-plogis(qlogis(phi)+rnorm(1,0,sigma))
+  phi<-plogis(qlogis(phi))#+rnorm(1,0,sigma))
   return(phi)
 }
 
@@ -24,12 +21,16 @@ startTimes<-times[1:(length(times)-1)]
 endTimes<-times[2:length(times)]-1
 
 n.occasions<-length(times)
-marked<-rep(30,n.occasions-1)
+marked<-rep(34,n.occasions-1)
 
+pMu<-runif(1,0,2.197225)
+pSigma<-runif(1,0.1,1)
+pBeta<-rnorm(n.occasions-1,pMu,pSigma)
+phiBeta<-c(runif(1,5,9),runif(1,-2,2),runif(1,-2,2),runif(1,-2,2))
 
-p<-rep(plogis(pBeta),n.occasions-1)
+p<-plogis(pBeta)
 
-r.var<-runif(1,0,2)#residual temporal variance
+r.var<-0#runif(1,0.1,2)#residual temporal variance
 
 times<-round(seq(1,length(flows),length.out=63))
 startTimes<-times[1:(length(times)-1)]
@@ -41,7 +42,7 @@ for(t in 1:(n.occasions-1)){
 }
 
 PHI<-matrix(phi,ncol=n.occasions-1,nrow=sum(marked),byrow=T)
-P<-matrix(p,ncol=n.occasions-1,nrow=sum(marked))
+P<-matrix(p,ncol=n.occasions-1,nrow=sum(marked),byrow = T)
 
 simul.cjs<-function(PHI,P,marked){
   n.occasions<-dim(PHI)[2]+1
@@ -107,12 +108,12 @@ jagsData<-list(y=CH,
 inits<-function(){list(z=zInits)}
 
 na <- 100
-nb <- 7000
-ni <- 10000
+nb <- 1
+ni <- 3000
 nt <- 3
 nc <- 3
 
-varsToMonitor<-c('pBeta','phiBeta','sdPhi')
+varsToMonitor<-c('phiBeta','pMu','pSigma','')
 
 out <- jags(
   data=jagsData,
@@ -127,6 +128,6 @@ out <- jags(
 
 
 results<-data.table(out$summary[1:6,c("mean","sd","2.5%","50%","97.5%","Rhat")])
-results[,trueValue:=c(pBeta,phiBeta,r.var)]
+results[,trueValue:=c(phiBeta,pMu,pSigma)]
 
-saveRDS(results,paste0("output/sim",simNum,".rds"))
+# saveRDS(results,paste0("output/sim",simNum,".rds"))
