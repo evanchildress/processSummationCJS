@@ -38,14 +38,6 @@ model{
     phiBeta[5,r,2]<-phiBeta[5,r,1]
   }
   
-  # phiTau<-1/pow(phiSigma,2)
-  # phiSigma~dunif(0,10)
-  # for(r in 1:nRivers){
-  #   for(s in 1:nSamples){
-  #     phiEps[r,s]~dnorm(0,phiTau)
-  #   }
-  # }
-  
   for(t in 1:nTimes){
     for(r in 1:nRivers){
       for(g in 1:2){
@@ -71,15 +63,12 @@ model{
               riverDATA[evalRows[i]-1],
               stageDATA[evalRows[i]-1]]*
       lengthDATA[evalRows[i]-1] #+
-      # phiEps[riverDATA[evalRows[i]-1],
-      #        sample[evalRows[i]-1]]
-      # 
+
     survProb[evalRows[i]]<-1/(1+exp(-logitSurvProb[evalRows[i]]))*z[evalRows[i]-1]
     
     # Observation of live encounters
     encDATA[ evalRows[i] ] ~ dbern( obsProb[ evalRows[i] ] )
     
     obsProb[ evalRows[i] ]<- p[ evalRows[i]] *proportionSampled[evalRows[i]] * z[ evalRows[i] ]
-    #* availableDATA[ evalRows[i]+1 ]                 # Must be on the study site to be capturable.
   }
 }
